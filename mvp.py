@@ -36,4 +36,21 @@ response = client.chat.completions.create(
    "type": "json_object"
   }
 )
-print(response.choices[0].message.content)
+result = response.choices[0].message.content
+
+# 3. AI의 판단에 따라 실제로 자동매매 진행하기
+import json
+result = json.loads(result)
+import pyupbit
+access = os.getenv("UPBIT_ACCESS_KEY")
+secret = os.getenv("UPBIT_SECRET_KEY")
+upbit = pyupbit.Upbit(access, secret)
+
+if result["decision"] == "buy":
+    print(upbit.buy_market_order("KRW-BTC", upbit.get_balance("KRW")))
+    print(result["reason"])
+elif result["decision"] == "sell":
+    print(upbit.sell_market_order("KRW-BTC", upbit.get_balance("KRW-BTC")))
+    print(result["reason"])
+elif result["decision"] == "hold":
+    print(result["reason"])
